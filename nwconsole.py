@@ -26,7 +26,7 @@ class NwMessage(object):
 		self.connectionHandle=struct.unpack("<L",stream[21:25])[0]
 		self.messageIdStream=stream[12:self.messageIdStreamSeek]
 		# print hexlify(self.messageIdStream)
-		self.data.fromstring(stream[33:])
+		self.data.fromstring(stream[self.messageIdStreamSeek:])
 
 	def tostring(self):
 		out=""+self.MAGIC_BYTES
@@ -178,14 +178,24 @@ class AddChan(NwMessage):
 		self.sid=None
 
 	def tostring(self):
-		print len(self.messageIdStream)
+		# print len(self.messageIdStream)
 		packedsid=struct.pack("<L",self.sid)
-		kwlen=struct.pack("<L",len(self.data.tostring()))
+		kwlen=struct.pack("<L",12+len(self.data.tostring()))
 		self.messageIdStream=self.messageIdStream[0:13]+packedsid+\
-							self.messageIdStream[17:]
-		print "\n\n\nXXX {}\n\n\n\n\n".format(hexlify(self.messageIdStream))
-		print len(self.messageIdStream)
+							kwlen+\
+							self.messageIdStream[21:]
+		# print "\n\n\nXXX {}\n\n\n\n\n".format(hexlify(self.messageIdStream))
+		# print len(self.messageIdStream)
 		return super(AddChan,self).tostring()
+
+class TargetPid(NwMessage):
+
+		def __init__(self):
+			super(TargetPid,self).__init__()
+			self.messageIdStream='\x01\x00\x03@\x00\x02\x00\x00\x00\x9b/#\x00\xab/#\x00%\x00\x00\x00\x02\x00\x00\x00'
+			self.messageIdStreamSeek=37
+
+
 
 # class ChanReply(NwMessage):
 
