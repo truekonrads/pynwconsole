@@ -11,7 +11,7 @@ m1.fromstring(s.recv(1024))
 # print m1.data.data
 # print m1.connectionHandle
 m2=nwconsole.HelloMessage()
-m2.data['username']='admin'
+m2.data['username']=sys.argv[3]
 m2.data['version']='92'
 m2.connectionHandle=m1.connectionHandle
 s.send(m2.tostring())
@@ -20,8 +20,8 @@ m3.fromstring(s.recv(1024))
 # print m3.data.data
 m4=nwconsole.LoginResponse()
 m4.connectionHandle=m1.connectionHandle
-m4.data['username']='admin'
-m4.data['password']=m4.makehash('netwitness',m3.data['hash'],m3.data['gsalt'])
+m4.data['username']=sys.argv[3]
+m4.data['password']=m4.makehash(sys.argv[4],m3.data['hash'],m3.data['gsalt'])
 s.send(m4.tostring())
 print "----Login----"
 m5=nwconsole.SidMessage()

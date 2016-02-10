@@ -142,6 +142,10 @@ class HelloMessage(NwMessage):
 		super(HelloMessage,self).__init__()
 		self.messageIdStreamSeek=41
 		self.messageIdStream="\x01\x00\x03\x00\x00\x01\x00\x00\x00\xdf\x0f\x00\x002\x00\x00\x00hello\x00\x00\x00\x02\x00\x00\x00"
+	def tostring(self):
+		kwlen=struct.pack("<L",12+len(self.data.tostring()))
+		self.messageIdStream=self.messageIdStream[0:13]+kwlen+self.messageIdStream[17:]
+		return super(HelloMessage,self).tostring()
 
 
 class ChallengeMessage(NwMessage):
@@ -160,6 +164,13 @@ class LoginResponse(NwMessage):
 	def makehash(self,password,srvhash,gsalt):
 		part1=sha256(sha256(password).hexdigest().upper()+gsalt.decode('base64')).hexdigest().upper()
 		return sha256("netwitness"+part1+srvhash).hexdigest().upper()
+
+
+	def tostring(self):
+		kwlen=struct.pack("<L",12+len(self.data.tostring()))
+		self.messageIdStream=self.messageIdStream[0:13]+kwlen+self.messageIdStream[17:]
+		return super(LoginResponse,self).tostring()
+
 
 class SidMessage(NwMessage):
 	def __init__(self):
