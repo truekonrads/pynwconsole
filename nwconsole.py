@@ -159,13 +159,45 @@ class LoginResponse(NwMessage):
 	
 	def makehash(self,password,srvhash,gsalt):
 		part1=sha256(sha256(password).hexdigest().upper()+gsalt.decode('base64')).hexdigest().upper()
-		return sha256(password+part1+srvhash).hexdigest().upper()
+		return sha256("netwitness"+part1+srvhash).hexdigest().upper()
 
 class SidMessage(NwMessage):
 	def __init__(self):
-		super(LoginResponse,self).__init__()
-		self.messageIdStreamSeek=41
-		self.messageIdStream="\x01\x00\x03\x00\x00\x01\x00\x00\x00\xdf\x0f\x00\x00q\x00\x00\x00login\x00\x00\x00\x02\x00\x00\x00"	
+		super(SidMessage,self).__init__()
+		self.messageIdStreamSeek=33
+		self.messageIdStream="\x01\x00\x03\x00\x00\x01\x00\x00\x00\xdf\x0f\x00\x00q\x00\x00\x00login\x00\x00\x00\x02\x00\x00\x00"
+
+
+class AddChan(NwMessage):
+	def __init__(self):
+		super(AddChan,self).__init__()
+		self.messageIdStreamSeek=41 
+		self.messageIdStream="\x01\x00\x03\x00\x00\x02\x00\x00\x00Z$\x82\x00j$\x82\x00\x19\x00\x00\x00addChan\x00\x01\x00\x00\x00"
+		# print hexlify(self.messageIdStream)
+		# print self.messageIdStream.find("addChan")
+		self.sid=None
+
+	def tostring(self):
+		print len(self.messageIdStream)
+		packedsid=struct.pack("<L",self.sid)
+		kwlen=struct.pack("<L",len(self.data.tostring()))
+		self.messageIdStream=self.messageIdStream[0:13]+packedsid+\
+							self.messageIdStream[17:]
+		print "\n\n\nXXX {}\n\n\n\n\n".format(hexlify(self.messageIdStream))
+		print len(self.messageIdStream)
+		return super(AddChan,self).tostring()
+
+# class ChanReply(NwMessage):
+
+
+	# def fromsting(self,stream):
+	# 	raise NotImplemenetdError,\
+	# 		"the NwKeyValue is broken here a little"
+
+
+	# def tostring(self):
+
+
 
 
 
