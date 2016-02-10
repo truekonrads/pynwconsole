@@ -196,25 +196,27 @@ class TargetPid(NwMessage):
 			self.messageIdStreamSeek=37
 
 
+class PacketQuery(NwMessage):
 
-# class ChanReply(NwMessage):
+	def __init__(self):
+		super(PacketQuery,self).__init__()
+		self.messageIdStream='\x01\x00\x03\x00\x00\x04\x00\x00\x00Z$\x82\x00j$\x82\x00t$\x82\x00y\x00\x00\x00s\x00\x00\x00packets\x00\x04\x00\x00\x00'
+		self.sid=None
+		self.pid=None
+		self.target=None
 
-
-	# def fromsting(self,stream):
-	# 	raise NotImplemenetdError,\
-	# 		"the NwKeyValue is broken here a little"
-
-
-	# def tostring(self):
-
-
-
-
-
-
-
-
-
+	def tostring(self):
+		# print len(self.messageIdStream)
+		packedsid=struct.pack("<L",self.sid)
+		packedpid=struct.pack("<L",self.pid)
+		packedtarget=struct.pack("<L",self.target)
+		kwlen=struct.pack("<L",12+len(self.data.tostring()))
+		self.messageIdStream=self.messageIdStream[0:13]+packedsid+\
+							packedpid+packedtarget+kwlen+\
+							self.messageIdStream[29:]
+		# print "\n\n\nXXX {}\n\n\n\n\n".format(hexlify(self.messageIdStream))
+		# print len(self.messageIdStream)
+		return super(PacketQuery,self).tostring()
 
 
 

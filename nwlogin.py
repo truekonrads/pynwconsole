@@ -54,9 +54,21 @@ s.send(m8.tostring())
 m9=nwconsole.TargetPid()
 m9.fromstring(s.recv(1024))
 # print m7.data.data
-print "Target: {}, Pid: {}".format(m7.data['target'],m7.data['pid'])
-
-
+print "Target: {}, Pid: {}".format(m9.data['target'],m9.data['pid'])
+pid=int(m9.data['pid'])
+target=int(m9.data['target'])
+m10=nwconsole.PacketQuery()
+m10.sid=sid
+m10.pid=pid
+m10.target=target
+m10.connectionHandle=m1.connectionHandle
+m10.data['time1']='2016-02-10 11:55:00'
+m10.data['time2']='2016-02-10 11:55:15'
+m10.data['pathname']='/tmp/foobar'
+m10.data['op']='start'
+x=m10.tostring()
+s.send(x)
+print s.recv(1024)
 s.close()
 
 
