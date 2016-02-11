@@ -49,7 +49,7 @@ for k in "hostport password username from_time to_time output".split(" "):
 
 
 
-s=socket.create_connection(options.hostport.split(":"))
+s=socket.create_connection(options.hostport.split(":"),15)
 
 m1=nwconsole.OpeningMessage()
 m1.fromstring(s.recv(1024))
@@ -124,17 +124,21 @@ else:
 
 # time.sleep(1)
 lastbuf=""
+totaltransfer=0
 while True:
-    buf=s.recv(8)
+    try:
+        buf=s.recv(8)
+    except socket.timeout:
+        break
     if len(buf)==0:
         break
-    assert buf[0:4]==nwconsole.NwMessage.MAGIC_BYTES,\
+    assert buf[0:3]==nwconsole.NwMessage.MAGIC_BYTES[0:3],\
     "Expected magic bytes, got: {0}".format(hexlify(buf+s.recv(1024)))
     msglen=struct.unpack("<L",buf[4:8])[0]
     while len(buf)<msglen+8:
         buf+=s.recv(msglen-len(buf)+8)
     if buf.find("Invalid operation 'processed'")>-1:
-        print >>sys.stderr,"Last packet received, done!"
+       
         break
     m=re.search("....percent....(\d+)....count....(\d+)",buf)
     x=buf.find(m.group(0))
@@ -153,8 +157,12 @@ while True:
 
     seekpos=x+i
     print >>sys.stderr, "Percent {0}, count {1}, msglen {2}".format(percent,count,msglen)
+    totaltransfer+=int(msglen)
     out.write(buf[seekpos:])
     lastbuf=buf
+
+print >>sys.stderr,"Last packet received, done!"
+print >>sys.stderr,"Total mbytes transferred: {0}".format(totaltransfer/1024/1024)
 s.close()
 
 

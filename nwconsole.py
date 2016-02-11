@@ -10,6 +10,7 @@ except ImportError:
 from hashlib import sha256
 class NwMessage(object):
 	MAGIC_BYTES="\xa9\x00\x01\x00"
+	# MAGIC_BYTES="\xa9\x00\x01"
 	def __init__(self):
 		self.data=NwKeyValue()
 		self.protocolVersion=98
@@ -18,7 +19,7 @@ class NwMessage(object):
 		self.connectionHandle=None
 
 	def fromstring(self,stream):
-		assert stream[0:4]==self.MAGIC_BYTES,\
+		assert stream[0:3]==self.MAGIC_BYTES[0:3],\
 			"Expected magic bytes, got: {0}".format(hexlify(stream[0:4]))
 		self.msglen=struct.unpack("<L",stream[4:8])[0]
 		# print "msglen: " + str(self.msglen)
