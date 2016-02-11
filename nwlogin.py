@@ -155,7 +155,7 @@ while True:
         pkt.connectionHandle=m1.connectionHandle
         s.send(pkt.tostring())
 
-    seekpos=x+i
+    seekpos=x+i+13+len(count)
     print >>sys.stderr, "Percent {0}, count {1}, msglen {2}".format(percent,count,msglen)
     totaltransfer+=int(msglen)
     out.write(buf[seekpos:])
