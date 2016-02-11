@@ -15,3 +15,6 @@ nwlogin.py  --from "2016-02-10 11:55:00"\
 ```
 
 Use "-" for output if you want to send to stdout
+
+Procol compatible with RSA Security Analytics Console 10.5.1.0.6231
+
