@@ -5,7 +5,8 @@ from binascii import hexlify
 try:
 	from collections import OrderedDict
 except ImportError:
-		OrderedDict=dict
+		from ordereddict import OrderedDict
+		# OrderedDict=dict
 from hashlib import sha256
 class NwMessage(object):
 	MAGIC_BYTES="\xa9\x00\x01\x00"
@@ -53,6 +54,25 @@ class NwKeyValue(object):
 		return self.data[attr]
 	def __setitem__(self,key,item):
 		self.data[key]=item
+
+	@classmethod
+	def _unpackkv(klass,stream):
+		i=0
+		keylength=struct.unpack("<L",stream[i:i+4])[0]
+		# print "KL: {}".format(keylength)
+		i+=4
+		key=stream[i:i+keylength]
+		# print "KEY: '{}'".format(key)
+		i+=keylength
+		vallength=struct.unpack("<L",stream[i:i+4])[0]
+		# print "VL {}".format(vallength)
+		i+=4
+		val=stream[i:i+vallength]
+		# print "VAL {}".format(val)
+		i+=vallength
+		return(key,val,i)
+		# self.data[key]=val
+
 	def fromstring(self,stream):
 		# it is important that the stream starts with message length market	
 		# or else it'll get confused
@@ -184,6 +204,28 @@ class PacketQuery(NwMessage):
 		# print "\n\n\nXXX {}\n\n\n\n\n".format(hexlify(self.messageIdStream))
 		# print len(self.messageIdStream)
 		return super(PacketQuery,self).tostring()
+
+class ProcessedPacketNotice(NwMessage):
+
+	def __init__(self):
+		super(ProcessedPacketNotice,self).__init__()
+		self.messageIdStream='\x01\x00\x03\x00\x00\x04\x00\x00\x00Z$\x82\x00j$\x82\x00t$\x82\x00y\x00\x00\x00s\x00\x00\x00packets\x00\x02\x00\x00\x00'
+		self.sid=None
+		self.pid=None
+		self.target=None
+
+	def tostring(self):
+		# print len(self.messageIdStream)
+		packedsid=struct.pack("<L",self.sid)
+		packedpid=struct.pack("<L",self.pid)
+		packedtarget=struct.pack("<L",self.target)
+		kwlen=struct.pack("<L",12+len(self.data.tostring()))
+		self.messageIdStream=self.messageIdStream[0:13]+packedsid+\
+							packedpid+packedtarget+kwlen+\
+							self.messageIdStream[29:]
+		# print "\n\n\nXXX {}\n\n\n\n\n".format(hexlify(self.messageIdStream))
+		# print len(self.messageIdStream)
+		return super(ProcessedPacketNotice,self).tostring()		
 
 
 # class PacketData(NwMessage):

@@ -123,6 +123,7 @@ else:
     out=file(options.output,"wb")
 
 # time.sleep(1)
+lastbuf=""
 while True:
     buf=s.recv(8)
     if len(buf)==0:
@@ -130,12 +131,30 @@ while True:
     assert buf[0:4]==nwconsole.NwMessage.MAGIC_BYTES,\
     "Expected magic bytes, got: {0}".format(hexlify(buf+s.recv(1024)))
     msglen=struct.unpack("<L",buf[4:8])[0]
-    while len(buf)<msglen-8:
-        buf+=s.recv(msglen-len(buf)-8)
+    while len(buf)<msglen+8:
+        buf+=s.recv(msglen-len(buf)+8)
+    if buf.find("Invalid operation 'processed'")>-1:
+        print >>sys.stderr,"Last packet received, done!"
+        break
     m=re.search("....percent....(\d+)....count....(\d+)",buf)
-    seekpos=buf.find(m.group(0))+len(m.group(0))
-    print >>sys.stderr, "Percent {0}, count {1}, msglen {2}".format(m.group(1),m.group(2),msglen)
+    x=buf.find(m.group(0))
+    # nwk=nwconsole.NwKeyValue()
+    (_,percent,i)=nwconsole.NwKeyValue._unpackkv(buf[x:])
+    (_,count,i)=nwconsole.NwKeyValue._unpackkv(buf[x+i:])
+    if int(count)%100==0:
+        pkt=nwconsole.ProcessedPacketNotice()
+        pkt.sid=sid
+        pkt.pid=pid
+        pkt.target=target
+        pkt.data['op']='processed'
+        pkt.data['count']=count
+        pkt.connectionHandle=m1.connectionHandle
+        s.send(pkt.tostring())
+
+    seekpos=x+i
+    print >>sys.stderr, "Percent {0}, count {1}, msglen {2}".format(percent,count,msglen)
     out.write(buf[seekpos:])
+    lastbuf=buf
 s.close()
 
 
